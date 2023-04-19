@@ -4,8 +4,11 @@ const path = require('path')
 const puppeteer = require('puppeteer');
 const cheerio = require('cheerio');
 
-app.set('view', path.join(__dirname, 'views'));
+let browser;
+
+app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+app.use(express.static('public'));
 
 async function scrapeData(url, page) {
     try {
@@ -13,24 +16,31 @@ async function scrapeData(url, page) {
         const html = await page.evaluate(() => document.body.innerHTML);
         const $ = cheerio.load(html);
 
-        let title = $('h1').text();
 
         return {
-            title
+
         }
     } catch(error) {
         console.log(error)
     }
 }
 
-async function getResults() {
+async function getResults(req, res) {
+
+}
+app.get('/results', async function(req, res) {
+    let url = req.query.search;
     browser = await puppeteer.launch({headless : false});
     const page = await browser.newPage();
 
-    let data = await scrapeData('https://en.wikipedia.org/wiki/Avatar:_The_Last_Airbender', page)
-    console.log(data.title)
-    browser.close();
+    let data = await scrapeData(url,page);
+    browser.close()
+});
 
-}
+app.get('/search', (req,res)=>{
+    res.render('search');
+})
 
-getResults()
+app.listen(3000, ()=>{
+    console.log('Server has started')
+})
