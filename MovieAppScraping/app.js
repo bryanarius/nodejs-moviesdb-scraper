@@ -21,7 +21,21 @@ async function scrapeData(url, page) {
         let overview = $(".overview > p").text();
         let userScore = $('.user_score_chart').attr('data-percent');
         let imgUrl = $("#main > section > div.header.large.border.first.lazyloaded > div > div > section > div.poster > div.image_content > a > img").attr("src");
-        imgUrl = imgUrl.replaceWith('_filter(blur)', '')
+
+        
+        let crewLength = $("div.header_info > ol > li").length;
+
+        let crew =[];
+
+        for(let i=1; i<=crewLength; i++) {
+            let name = $("div.header_info > ol > li:nth-child("+i+") > p:nth-child(1)").text();
+            let role = $("div.header_info > ol > li:nth-child("+i+") > p.character").text();
+
+            crew.push({
+                "name" : name,
+                "role" : role
+            });
+        }
         browser.close()
 
         return {
@@ -29,7 +43,8 @@ async function scrapeData(url, page) {
             releaseDate,
             overview,
             userScore,
-            imgUrl
+            imgUrl,
+            crew
         }
 
     } catch(error) {
@@ -39,7 +54,7 @@ async function scrapeData(url, page) {
 
 app.get('/results', async function(req, res) {
     let url = req.query.search;
-    browser = await puppeteer.launch({headless : false});
+    browser = await puppeteer.launch({headless : true});
     const page = await browser.newPage();
 
     let data = await scrapeData(url,page);
